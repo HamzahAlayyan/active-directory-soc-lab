@@ -4,13 +4,38 @@
 
 Detect repeated failed authentication attempts that may indicate password guessing, brute-force activity, or other suspicious authentication behaviour.
 
-## Relevant Event
+## Data Source
 
-Windows Event ID 4625 was used to identify failed logon attempts.
+Windows Security Event ID 4625 was used to identify failed logon attempts.
 
 ## Detection Logic
 
-The detection searches for failed authentication events and identifies repeated attempts involving the same account, source, or host.
+The detection searches for failed authentication events and identifies repeated attempts involving the same account, source system, or target system.
+
+The detection was validated using the controlled RDP brute-force simulation performed within the lab environment.
+
+## RDP Brute-Force Detection
+
+During the simulation, repeated password attempts against the RDP service generated multiple Event ID 4625 events.
+
+These events provided the telemetry required to identify the simulated password-guessing activity.
+
+![Multiple Failed Logins](../screenshots/splunk/failed-logon-event.png)
+
+## Investigation
+
+When investigating repeated failed authentication attempts, the following information should be reviewed:
+
+- Username
+- Source system
+- Destination computer
+- Logon type
+- Failure reason
+- Timestamp
+- Number of attempts
+- Frequency of attempts
+
+The combination of repeated failures, timing, account information, and source system can help determine whether the activity is consistent with password-guessing behaviour.
 
 ## MITRE ATT&CK Mapping
 
@@ -20,30 +45,16 @@ The detection searches for failed authentication events and identifies repeated 
 | Technique | T1110 – Brute Force |
 | Sub-technique | T1110.001 – Password Guessing |
 | Targeted Service | T1021.001 – Remote Services: Remote Desktop Protocol |
-| Windows Event | 4625 – An account failed to log on |
+| Telemetry | Windows Security Event ID 4625 |
 
-The simulated activity involved repeated password attempts against an RDP service. Windows Event ID 4625 was used as the primary telemetry source for identifying failed authentication attempts.
-
-## Investigation
-
-When investigating an alert, the following information should be reviewed:
-
-- Username
-- Source network address
-- Destination computer
-- Logon type
-- Failure reason
-- Timestamp
-- Number of attempts
-
-## Evidence
-
-![Failed Authentication](../screenshots/splunk/failed-logon-event.png)
+The simulated attack involved repeated password attempts against an RDP service. Failed authentication attempts generated Windows Event ID 4625 events, which were collected and analysed in Splunk.
 
 ## Analyst Interpretation
 
-A single failed authentication attempt may be benign. Multiple failures within a short period may warrant further investigation, particularly when they originate from the same source or target the same account.
+A single failed authentication attempt may be benign. Multiple failures within a short period, particularly when targeting the same account or originating from the same source, may warrant further investigation.
+
+In this lab, the repeated failures were generated intentionally as part of the controlled RDP brute-force simulation.
 
 ## Outcome
 
-This detection demonstrates how Windows authentication telemetry can be used to identify potentially suspicious login behaviour.
+This detection demonstrates how Windows authentication telemetry can be used to identify and investigate potentially suspicious login behaviour within a SIEM environment.
